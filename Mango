@@ -3,8 +3,8 @@ local Window = Library.CreateLib("Locked hub V1", "DarkTheme")
 local player = game.Players.LocalPlayer
 --Variables
 local flolen = 0.2
-local playerwep = player.Backpack:FindFirstChildWhichIsA("NumberValue")
-local playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("NumberValue")
+local playerwep = player.Backpack:FindFirstChildWhichIsA("ValueBase")
+local playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("ValueBase")
 local redon = false
 local blueon = false
 local greenon = false
@@ -124,7 +124,7 @@ WeaponTrait:NewButton("Auto Roll Weapon", "This will auto roll your weapon until
 
     while not player.Backpack:FindFirstChild(weapontofind) do
         game.ReplicatedStorage.rerolls.specreroll:FireServer(2)
-        weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("NumberValue").Name)
+        weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
         print(player.Backpack:FindFirstChild(weapontofind))
         task.wait(0.2)
     end
@@ -147,9 +147,9 @@ WeaponTrait:NewKeybind("ToggleUI", "wtv u wanna use to close and open tis", Enum
 end)
 -- Loops
 while task.wait(0.2) do
-    weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("NumberValue").Name)
-    playerwep = player.Backpack:FindFirstChildWhichIsA("NumberValue").Name
+    weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
+    playerwep = player.Backpack:FindFirstChildWhichIsA("ValueBase").Name
 
-     traitlabel:UpdateLabel(player.Backpack.Trait:FindFirstChildWhichIsA("NumberValue").Name)
-    playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("NumberValue").Name
+     traitlabel:UpdateLabel(player.Backpack.Trait:FindFirstChildWhichIsA("ValueBase").Name)
+    playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("ValueBase").Name
 end
