@@ -1,0 +1,155 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Locked hub V1", "DarkTheme")
+local player = game.Players.LocalPlayer
+--Variables
+local flolen = 0.2
+local playerwep = player.Backpack:FindFirstChildWhichIsA("NumberValue")
+local playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("NumberValue")
+local redon = false
+local blueon = false
+local greenon = false
+local blackon = false
+local whiteon = false
+--Auto Roll
+local AutoRoll = Window:NewTab("AutoRoll")
+local Flow = AutoRoll:NewSection("Auto Flow Roll")
+--FlowToggleStates
+Flow:NewToggle("Red", "ToggleInfo", function(state)
+    if state then
+        redon = true
+    else
+        redon = false
+    end
+end)
+
+Flow:NewToggle("Blue", "ToggleInfo", function(state)
+    if state then
+        blueon = true
+    else
+        blueon = false
+    end
+end)
+
+Flow:NewToggle("Green", "ToggleInfo", function(state)
+    if state then
+        greenon = true
+    else
+        greenon = false
+    end
+end)
+
+Flow:NewToggle("Black", "ToggleInfo", function(state)
+    if state then
+        blackon = true
+    else
+        blackon = false
+    end
+end)
+
+Flow:NewToggle("White", "ToggleInfo", function(state)
+    if state then
+        whiteon = true
+    else
+        whiteon = false
+    end
+end)
+--MainFlowGui
+Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you get the desired color", function()
+    local player = game.Players.LocalPlayer
+    local charblue = player.Character.AuraColour.Blue
+    local charred = player.Character.AuraColour.Red
+    local charGreen = player.Character.AuraColour.Green
+
+    local function isCloseEnough(value, target, tolerance)
+        return math.abs(value - target) <= tolerance
+    end
+
+    local tolerance = flolen
+
+    -- Assuming redon, blueon, greenon, whiteon, and blackon are already defined
+    if not (redon or blueon or greenon or whiteon or blackon) then
+        print("No colors selected for rolling.")
+        return
+    end
+
+    while true do
+        if redon and isCloseEnough(charred.Value, 1, tolerance) and isCloseEnough(charblue.Value, 0, tolerance) and isCloseEnough(charGreen.Value, 0, tolerance) then
+            break
+        end
+        if blueon and isCloseEnough(charred.Value, 0, tolerance) and isCloseEnough(charblue.Value, 1, tolerance) and isCloseEnough(charGreen.Value, 0, tolerance) then
+            break
+        end
+        if greenon and isCloseEnough(charred.Value, 0, tolerance) and isCloseEnough(charblue.Value, 0, tolerance) and isCloseEnough(charGreen.Value, 1, tolerance) then
+            break
+        end
+        if whiteon and isCloseEnough(charred.Value, 1, tolerance) and isCloseEnough(charblue.Value, 1, tolerance) and isCloseEnough(charGreen.Value, 1, tolerance) then
+            break
+        end
+        if blackon and isCloseEnough(charred.Value, 0, tolerance) and isCloseEnough(charblue.Value, 0, tolerance) and isCloseEnough(charGreen.Value, 0, tolerance) then
+            break
+        end
+
+        game.ReplicatedStorage.rerolls.aurareroll:FireServer()
+        print(charblue.Value, charred.Value, charGreen.Value)
+        wait(0.1)
+    end
+end)
+
+local flowlentext = Flow:NewLabel("CurrentFlowLeniancy: " .. flolen)
+Flow:NewTextBox("FlowColorLenianacy", "How close a color can get to pure (Below 1)", function(txt)
+	if tonumber(txt) then
+        if tonumber(txt) < 1 then
+            flowlentext:UpdateLabel("CurrentFlowLeniancy: " .. txt)
+            flolen = tonumber(txt)
+        end
+    end
+end)
+
+local WeaponTrait = AutoRoll:NewSection("Weapon and Trait Auto roll")
+local WeaponSelected
+local TraitSelected
+WeaponTrait:NewDropdown("Weapon", "DropdownInf", {"Accelerate", "AceEater", "Acrobatic", "Chigiri", "CopyCat", "DirectShot", "Emperor", "Formless", "GodSpeed", "IronHead", "King", "Kunigami", "Leader", "LongLegs", "Monster", "Nagi", "Neurotic", "Planetary", "Repel", "Riptide", "Snatch", "Serpent"}, function(currentOption)
+    WeaponSelected = currentOption
+end)
+WeaponTrait:NewDropdown("Trait", "DropdownInf", {"Ambidextrous", "Athlete", "Bunnys", "Clamps", "Claw", "Diver", "Egoist", "Fortune", "GoldenZone", "LongStrides", "Metavision", "NoLook", "Powerhouse", "Puppeteer", "QuickDraw", "Revolver", "Ripper", "Surf", "Tank", "Tireless", "TwinGuns", "Unbreakable"}, function(currentOption)
+    TraitSelected = currentOption
+end)
+
+local weplabel = WeaponTrait:NewLabel("Current Weapon: " .. playerwep.Name)
+local traitlabel = WeaponTrait:NewLabel("Current Trait: " .. playertrait.Name)
+--Weapon And Trait rolling
+WeaponTrait:NewButton("Auto Roll Weapon", "This will auto roll your weapon until you get the desired weapon", function()
+    local player = game.Players.LocalPlayer
+    local weapontofind = WeaponSelected
+
+    while not player.Backpack:FindFirstChild(weapontofind) do
+        game.ReplicatedStorage.rerolls.specreroll:FireServer(2)
+        weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("NumberValue").Name)
+        print(player.Backpack:FindFirstChild(weapontofind))
+        task.wait(0.2)
+    end
+
+end)
+
+WeaponTrait:NewButton("Auto Roll Trait", "This will auto roll your trait until you get the desired trait", function()
+    local player = game.Players.LocalPlayer
+    local weapontofind = TraitSelected
+    while not player.Backpack.Trait:FindFirstChild(weapontofind) do
+        game.ReplicatedStorage.rerolls.traitreroll:FireServer(2)
+        print(player.Backpack:FindFirstChild(weapontofind))
+        wait(0.25)
+    end
+end)
+
+--Keybind
+WeaponTrait:NewKeybind("ToggleUI", "wtv u wanna use to close and open tis", Enum.KeyCode.LeftAlt, function()
+	Library:ToggleUI()
+end)
+-- Loops
+while task.wait(0.2) do
+    weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("NumberValue").Name)
+    playerwep = player.Backpack:FindFirstChildWhichIsA("NumberValue").Name
+
+     traitlabel:UpdateLabel(player.Backpack.Trait:FindFirstChildWhichIsA("NumberValue").Name)
+    playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("NumberValue").Name
+end
