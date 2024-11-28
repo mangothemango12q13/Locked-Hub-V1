@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Locked hub V1", "DarkTheme")
+local Window = Library.CreateLib("Locked hub V1.5", "DarkTheme")
 local player = game.Players.LocalPlayer
 --Variables
 local flolen = 0.2
@@ -105,13 +105,27 @@ Flow:NewTextBox("FlowColorLenianacy", "How close a color can get to pure (Below 
     end
 end)
 
+
 local WeaponTrait = AutoRoll:NewSection("Weapon and Trait Auto roll")
 local WeaponSelected
 local TraitSelected
+local flowbufflen = 0.1
 WeaponTrait:NewDropdown("Weapon", "DropdownInf", {"Accelerate", "AceEater", "Acrobatic", "Chigiri", "CopyCat", "DirectShot", "Emperor", "Formless", "GodSpeed", "IronHead", "King", "Kunigami", "Leader", "LongLegs", "Monster", "Nagi", "Neurotic", "Planetary", "Repel", "Riptide", "Snatch", "Serpent"}, function(currentOption)
     WeaponSelected = currentOption
 end)
 WeaponTrait:NewDropdown("Trait", "DropdownInf", {"Ambidextrous", "Athlete", "Bunnys", "Clamps", "Claw", "Diver", "Egoist", "Fortune", "GoldenZone", "LongStrides", "Metavision", "NoLook", "Powerhouse", "Puppeteer", "QuickDraw", "Revolver", "Ripper", "Surf", "Tank", "Tireless", "TwinGuns", "Unbreakable"}, function(currentOption)
+    TraitSelected = currentOption
+end)
+local flobufflentext = Flow:NewLabel("CurrentFlowBuffLeniany: " .. flowbufflen)
+Flow:NewTextBox("FlowBuffLeniancy", "How close a color can get to pure (Below 1)", function(txt)
+	if tonumber(txt) then
+        if tonumber(txt) <= 0.1 then
+            flobufflentext:UpdateLabel("CurrentFlowBuffLeniany: " .. txt)
+            flowbufflen = tonumber(txt)
+        end
+    end
+end)
+WeaponTrait:NewDropdown("Trait", "DropdownInf", {"Speed", "Power", "Stamina", "Cooldown"}, function(currentOption)
     TraitSelected = currentOption
 end)
 
@@ -141,11 +155,37 @@ WeaponTrait:NewButton("Auto Roll Trait", "This will auto roll your trait until y
     end
 end)
 
+WeaponTrait:NewButton("Auto Roll Flow Buff", "This will auto roll your flow buff until you get the desired flow buff", function()
+    local player = game.Players.LocalPlayer
+    local desiredBuffValue = 1.4 + flowbufflen
+
+    while math.abs(game.Workspace[player.Name].AuraColour.Buff:GetAttribute("BuffValue") - desiredBuffValue) > flowbufflen do
+        game.ReplicatedStorage.rerolls.buffreroll:FireServer()
+        print(game.Workspace[player.Name].AuraColour.Buff:GetAttribute("BuffValue"))
+        task.wait(0.1)
+    end
+
+    print("Desired flow buff achieved: " .. game.Workspace[player.Name].AuraColour.Buff:GetAttribute("BuffValue"))
+end)
+
+
+
 --Keybind
 WeaponTrait:NewKeybind("ToggleUI", "wtv u wanna use to close and open tis", Enum.KeyCode.LeftAlt, function()
 	Library:ToggleUI()
 end)
 -- Loops
+WeaponTrait:NewButton("RedeemCode", "This will auto roll your trait until you get the desired trait", function()
+    local code = game.ReplicatedStorage.SendCode
+    code:FireServer("ACEEATER")
+    code:FireServer("WORLDCUP")
+    code:FireServer("TWINGUNS")
+    code:FireServer("LOCKEDWEEN")
+    code:FireServer("50KLIKES")
+    code:FireServer("100KFAVOURITE")
+    code:FireServer("90MILVISITS")
+    code:FireServer("AUSTRALIAWC")
+end)
 while task.wait(0.2) do
     weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
     playerwep = player.Backpack:FindFirstChildWhichIsA("ValueBase").Name
