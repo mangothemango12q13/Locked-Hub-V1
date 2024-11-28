@@ -125,9 +125,6 @@ Flow:NewTextBox("FlowBuffLeniancy", "How close a color can get to pure (Below 1)
         end
     end
 end)
-WeaponTrait:NewDropdown("Trait", "DropdownInf", {"Speed", "Power", "Stamina", "Cooldown"}, function(currentOption)
-    TraitSelected = currentOption
-end)
 
 local weplabel = WeaponTrait:NewLabel("Current Weapon: " .. playerwep.Name)
 local traitlabel = WeaponTrait:NewLabel("Current Trait: " .. playertrait.Name)
