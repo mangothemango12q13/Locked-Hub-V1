@@ -1,8 +1,8 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Locked hub V2", "DarkTheme")
+local Window = Library.CreateLib("Locked hub V1.5", "DarkTheme")
 local player = game.Players.LocalPlayer
 --Variables
-local flolen = 0.05
+local flolen = 0.1
 local playerwep = player.Backpack:FindFirstChildWhichIsA("ValueBase")
 local playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("ValueBase")
 local redon = false
@@ -63,32 +63,16 @@ Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you 
     local charred = player.Character.AuraColour.Red
     local charGreen = player.Character.AuraColour.Green
 
-    local function isCloseEnough(value, target, tolerance)
-        return math.abs(value - target) <= tolerance
+    local previousRed, previousGreen, previousBlue = -1, -1, -1 -- Initialize with invalid values to force the first roll
+
+    local function isWithinTolerance(red, green, blue, targetRed, targetGreen, targetBlue, tolerance)
+        return math.abs(red - targetRed) <= tolerance and
+               math.abs(green - targetGreen) <= tolerance and
+               math.abs(blue - targetBlue) <= tolerance
     end
 
-    local tolerance = flolen
+    local tolerance = flolen -- Adjust to desired leniency
 
-    if yen.Value < 500 then
-        local args = {
-            [1] = "Right",
-            [2] = "F\255"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("rerolls"):WaitForChild("KeybindChange"):FireServer(unpack(args))
-
-        local TeleportService = game:GetService("TeleportService")
-        local HttpService = game:GetService("HttpService")
-        local PlaceID = game.PlaceId
-        local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"))
-
-        for _, server in ipairs(servers.data) do
-            if server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(PlaceID, server.id, game.Players.LocalPlayer)
-                break
-            end
-        end
-        return
-    end
 
     -- Assuming redon, blueon, greenon, whiteon, and blackon are already defined
     if not (redon or blueon or greenon or whiteon or blackon) then
@@ -96,28 +80,49 @@ Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you 
         return
     end
 
-    while true do
-        if redon and isCloseEnough(charred.Value, 1, tolerance) and isCloseEnough(charblue.Value, 0, tolerance) and isCloseEnough(charGreen.Value, 0, tolerance) then
-            break
-        end
-        if blueon and isCloseEnough(charred.Value, 0, tolerance) and isCloseEnough(charblue.Value, 1, tolerance) and isCloseEnough(charGreen.Value, 0, tolerance) then
-            break
-        end
-        if greenon and isCloseEnough(charred.Value, 0, tolerance) and isCloseEnough(charblue.Value, 0, tolerance) and isCloseEnough(charGreen.Value, 1, tolerance) then
-            break
-        end
-        if whiteon and isCloseEnough(charred.Value, 1, tolerance) and isCloseEnough(charblue.Value, 1, tolerance) and isCloseEnough(charGreen.Value, 1, tolerance) then
-            break
-        end
-        if blackon and isCloseEnough(charred.Value, 0, tolerance) and isCloseEnough(charblue.Value, 0, tolerance) and isCloseEnough(charGreen.Value, 0, tolerance) then
-            break
-        end
+    -- Initial roll to start the process
+    game.ReplicatedStorage.rerolls.aurareroll:FireServer()
+    print("Initial roll fired.")
 
-        game.ReplicatedStorage.rerolls.aurareroll:FireServer()
-        print(charblue.Value, charred.Value, charGreen.Value)
-        task.wait(0.1)
+    while task.wait(0.2) do
+        if charred.Value == previousRed and charGreen.Value == previousGreen and charblue.Value == previousBlue then
+            print("No color change detected, skipping roll.")
+            task.wait(0.5) -- Wait a bit longer before trying again
+        else
+            -- Check if the current color matches any target
+            if redon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 1, 0, 0, tolerance) then
+                print("Target color achieved: Red")
+                break
+            end
+            if blueon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 0, 1, tolerance) then
+                print("Target color achieved: Blue")
+                break
+            end
+            if greenon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 1, 0, tolerance) then
+                print("Target color achieved: Green")
+                break
+            end
+            if whiteon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 1, 1, 1, tolerance) then
+                print("Target color achieved: White")
+                break
+            end
+            if blackon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 0, 0, tolerance) then
+                print("Target color achieved: Black")
+                break
+            end
+
+            -- Update previous color values
+            previousRed, previousGreen, previousBlue = charred.Value, charGreen.Value, charblue.Value
+
+            -- Fire remote event to roll again
+            game.ReplicatedStorage.rerolls.aurareroll:FireServer()
+
+            -- Debug print to track rolling progress
+            print("Rolling... Current Values - Red:", charred.Value, "Green:", charGreen.Value, "Blue:", charblue.Value)
+        end
     end
 end)
+
 
 Flow:NewButton("Rollback", "Rejoins with your old data", function()
     local player = game.Players.LocalPlayer
@@ -229,7 +234,7 @@ WeaponTrait:NewButton("RedeemCode", "This will auto roll your trait until you ge
     code:FireServer("MEDALXLOCKED")
     code:FireServer("10KSUBS")
 end)
-while task.wait(0.2) do
+while task.wait(1) do
     weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
     playerwep = player.Backpack:FindFirstChildWhichIsA("ValueBase").Name
 
