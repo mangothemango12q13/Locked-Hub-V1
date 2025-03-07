@@ -1,8 +1,8 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Locked hub V1.5", "DarkTheme")
+local Window = Library.CreateLib("Locked hub V2", "DarkTheme")
 local player = game.Players.LocalPlayer
 --Variables
-local flolen = 0.2
+local flolen = 0.05
 local playerwep = player.Backpack:FindFirstChildWhichIsA("ValueBase")
 local playertrait = player.Backpack.Trait:FindFirstChildWhichIsA("ValueBase")
 local redon = false
@@ -10,6 +10,8 @@ local blueon = false
 local greenon = false
 local blackon = false
 local whiteon = false
+
+
 --Auto Roll
 local AutoRoll = Window:NewTab("AutoRoll")
 local Flow = AutoRoll:NewSection("Auto Flow Roll")
@@ -56,6 +58,7 @@ end)
 --MainFlowGui
 Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you get the desired color", function()
     local player = game.Players.LocalPlayer
+    local yen = player.Character.RankSystem.Yen
     local charblue = player.Character.AuraColour.Blue
     local charred = player.Character.AuraColour.Red
     local charGreen = player.Character.AuraColour.Green
@@ -65,6 +68,27 @@ Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you 
     end
 
     local tolerance = flolen
+
+    if yen.Value < 500 then
+        local args = {
+            [1] = "Right",
+            [2] = "F\255"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("rerolls"):WaitForChild("KeybindChange"):FireServer(unpack(args))
+
+        local TeleportService = game:GetService("TeleportService")
+        local HttpService = game:GetService("HttpService")
+        local PlaceID = game.PlaceId
+        local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"))
+
+        for _, server in ipairs(servers.data) do
+            if server.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(PlaceID, server.id, game.Players.LocalPlayer)
+                break
+            end
+        end
+        return
+    end
 
     -- Assuming redon, blueon, greenon, whiteon, and blackon are already defined
     if not (redon or blueon or greenon or whiteon or blackon) then
@@ -91,8 +115,31 @@ Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you 
 
         game.ReplicatedStorage.rerolls.aurareroll:FireServer()
         print(charblue.Value, charred.Value, charGreen.Value)
-        wait(0.1)
+        task.wait(0.1)
     end
+end)
+
+Flow:NewButton("Rollback", "Rejoins with your old data", function()
+    local player = game.Players.LocalPlayer
+    local yen = player.Character.RankSystem.Yen
+        local args = {
+            [1] = "Right",
+            [2] = "F\255"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("rerolls"):WaitForChild("KeybindChange"):FireServer(unpack(args))
+		task.wait(0.2)
+        local TeleportService = game:GetService("TeleportService")
+        local HttpService = game:GetService("HttpService")
+        local PlaceID = game.PlaceId
+        local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"))
+
+        for _, server in ipairs(servers.data) do
+            if server.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(PlaceID, server.id, game.Players.LocalPlayer)
+                break
+            end
+        end
+        return
 end)
 
 local flowlentext = Flow:NewLabel("CurrentFlowLeniancy: " .. flolen)
@@ -174,14 +221,13 @@ end)
 -- Loops
 WeaponTrait:NewButton("RedeemCode", "This will auto roll your trait until you get the desired trait", function()
     local code = game.ReplicatedStorage.SendCode
-    code:FireServer("ACEEATER")
-    code:FireServer("WORLDCUP")
-    code:FireServer("TWINGUNS")
-    code:FireServer("LOCKEDWEEN")
-    code:FireServer("50KLIKES")
-    code:FireServer("100KFAVOURITE")
-    code:FireServer("90MILVISITS")
-    code:FireServer("AUSTRALIAWC")
+    code:FireServer("120KFAVOURITE")
+    code:FireServer("125MILVISITS")
+    code:FireServer("DRAGONHEADER")
+    code:FireServer("150KMEMBERS")
+    code:FireServer("70KLIKES")
+    code:FireServer("MEDALXLOCKED")
+    code:FireServer("10KSUBS")
 end)
 while task.wait(0.2) do
     weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
