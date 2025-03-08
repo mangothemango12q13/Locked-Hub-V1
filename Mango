@@ -184,25 +184,56 @@ local traitlabel = WeaponTrait:NewLabel("Current Trait: " .. playertrait.Name)
 WeaponTrait:NewButton("Auto Roll Weapon", "This will auto roll your weapon until you get the desired weapon", function()
     local player = game.Players.LocalPlayer
     local weapontofind = WeaponSelected
+    local currentWeaponName = nil -- To track the current weapon
 
-    while not player.Backpack:FindFirstChild(weapontofind) do
+    while task.wait(0.3) do -- Add wait for stability
+        local foundWeapon = player.Backpack:FindFirstChildWhichIsA("ValueBase")
+		print(foundWeapon.Name)
+        if foundWeapon and foundWeapon.Name == weapontofind then
+            print("Desired weapon acquired:", foundWeapon.Name)
+            break
+        end
+
+        -- Check if weapon value has changed
+        if foundWeapon and foundWeapon.Name ~= currentWeaponName then
+            currentWeaponName = foundWeapon.Name -- Update to the new value
+            print("Weapon changed. Current weapon:", currentWeaponName)
+        else
+            -- Value didn't change, skip rolling
+            print("No weapon change detected, waiting...")
+        end
+
+        -- Send the remote event to roll again if no match
         game.ReplicatedStorage.rerolls.specreroll:FireServer(2)
-        weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
-        print(player.Backpack:FindFirstChild(weapontofind))
-        task.wait(0.2)
     end
-
 end)
 
 WeaponTrait:NewButton("Auto Roll Trait", "This will auto roll your trait until you get the desired trait", function()
     local player = game.Players.LocalPlayer
-    local weapontofind = TraitSelected
-    while not player.Backpack.Trait:FindFirstChild(weapontofind) do
+    local traittofind = TraitSelected
+    local currentTraitName = nil -- To track the current trait
+
+    while task.wait(0.3) do -- Add wait for stability
+        local foundTrait = player.Backpack.Trait:FindFirstChildWhichIsA("ValueBase")
+        if foundTrait and foundTrait.Name == traittofind then
+            print("Desired trait acquired:", foundTrait.Name)
+            break
+        end
+
+        -- Check if trait value has changed
+        if foundTrait and foundTrait.Name ~= currentTraitName then
+            currentTraitName = foundTrait.Name -- Update to the new value
+            print("Trait changed. Current trait:", currentTraitName)
+        else
+            -- Value didn't change, skip rolling
+            print("No trait change detected, waiting...")
+        end
+
+        -- Send the remote event to roll again if no match
         game.ReplicatedStorage.rerolls.traitreroll:FireServer(2)
-        print(player.Backpack:FindFirstChild(weapontofind))
-        wait(0.25)
     end
 end)
+
 
 WeaponTrait:NewButton("Auto Roll Flow Buff", "This will auto roll your flow buff until you get the desired flow buff", function()
     local player = game.Players.LocalPlayer
@@ -234,7 +265,7 @@ WeaponTrait:NewButton("RedeemCode", "This will auto roll your trait until you ge
     code:FireServer("MEDALXLOCKED")
     code:FireServer("10KSUBS")
 end)
-while task.wait(1) do
+while task.wait(0.2) do
     weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
     playerwep = player.Backpack:FindFirstChildWhichIsA("ValueBase").Name
 
