@@ -31,7 +31,6 @@ Flow:NewToggle("Blue", "ToggleInfo", function(state)
         blueon = false
     end
 end)
-
 Flow:NewToggle("Green", "ToggleInfo", function(state)
     if state then
         greenon = true
@@ -56,6 +55,17 @@ Flow:NewToggle("White", "ToggleInfo", function(state)
     end
 end)
 --MainFlowGui
+
+local tpfalse = false
+Flow:NewToggle("Tp to safe spot", "ToggleInfo", function(state)
+    if state then
+        tpfalse = true
+    else
+        tpfalse = false
+    end
+end)
+
+
 Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you get the desired color", function()
     local player = game.Players.LocalPlayer
     local yen = player.Character.RankSystem.Yen
@@ -85,6 +95,9 @@ Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you 
     print("Initial roll fired.")
 
     while task.wait(0.2) do
+		if tpfalse == true then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(100, 10000, 100)
+		end
         if charred.Value == previousRed and charGreen.Value == previousGreen and charblue.Value == previousBlue then
             print("No color change detected, skipping roll.")
             task.wait(0.5) -- Wait a bit longer before trying again
@@ -125,26 +138,35 @@ end)
 
 
 Flow:NewButton("Rollback", "Rejoins with your old data", function()
-    local player = game.Players.LocalPlayer
-    local yen = player.Character.RankSystem.Yen
-        local args = {
-            [1] = "Right",
-            [2] = "F\255"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("rerolls"):WaitForChild("KeybindChange"):FireServer(unpack(args))
-		task.wait(0.2)
-        local TeleportService = game:GetService("TeleportService")
-        local HttpService = game:GetService("HttpService")
-        local PlaceID = game.PlaceId
-        local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"))
+	local player = game.Players.LocalPlayer
+	local yen = player.Character.RankSystem.Yen
+	local args = {
+		[1] = "Right",
+		[2] = "F\255"
+	}
+	game:GetService("ReplicatedStorage"):WaitForChild("rerolls"):WaitForChild("KeybindChange"):FireServer(unpack(args))
+	task.wait(0.2)
 
-        for _, server in ipairs(servers.data) do
-            if server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(PlaceID, server.id, game.Players.LocalPlayer)
-                break
-            end
-        end
-        return
+	local TeleportService = game:GetService("TeleportService")
+	local HttpService = game:GetService("HttpService")
+	local PlaceID = game.PlaceId
+
+	-- Fetch server data
+	local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"))
+
+	for _, server in ipairs(servers.data) do
+		-- Skip current server and check latency
+		if server.id ~= game.JobId and server.playing < server.maxPlayers then
+			local latency = server.ping or server.RequestQueueSize -- Approximation
+			if latency and latency < 100 then
+				TeleportService:TeleportToPlaceInstance(PlaceID, server.id, player)
+				break
+			end
+		end
+	end
+
+	return
+
 end)
 
 local flowlentext = Flow:NewLabel("CurrentFlowLeniancy: " .. flolen)
@@ -247,9 +269,143 @@ WeaponTrait:NewButton("Auto Roll Flow Buff", "This will auto roll your flow buff
 
     print("Desired flow buff achieved: " .. game.Workspace[player.Name].AuraColour.Buff:GetAttribute("BuffValue"))
 end)
+-- Server Crash
+local CrashServer = Window:NewTab("Server Crashing")
+local VfxEmotes = CrashServer:NewSection("VfxEmotes")
+local PartEmotes = CrashServer:NewSection("PartEmotes")
+-- Server Crash Variables
 
+-- Effects Variables
+local cupidvfx = false
+local puzzplepiecevfx = false
+-- Part variables
+local heartspart = false
+local reoball = false
+local anklebreak = false
+-- Main Server Crash
+VfxEmotes:NewToggle("Cupid", "ToggleInfo", function(state)
+    if state then
+        cupidvfx = true
+    else
+        cupidvfx = false
+    end
+end)
 
+VfxEmotes:NewToggle("Puzzle Pieces", "ToggleInfo", function(state)
+    if state then
+        puzzplepiecevfx = true
+    else
+        puzzplepiecevfx = false
+    end
+end)
 
+PartEmotes:NewToggle("Ball", "ToggleInfo", function(state)
+    if state then
+        heartspart = true
+    else
+        heartspart = false
+    end
+end)
+
+PartEmotes:NewToggle("Hearts", "ToggleInfo", function(state)
+    if state then
+        reoball = true
+    else
+        reoball = false
+    end
+end)
+
+PartEmotes:NewToggle("Ankle Break", "ToggleInfo", function(state)
+    if state then
+        anklebreak = true
+    else
+        anklebreak = false
+    end
+end)
+
+	-- Buttons Server Crash
+PartEmotes:NewButton("Server Crash", "Crash the server with whatever emotes you picked", function()
+coroutine.wrap(function()
+    coroutine.wrap(function()
+        if anklebreak == true then
+            -- Define ProductRepeat function
+            function ProductRepeat(tab, repeatCount)
+                local result = { {} }
+                for _ = 1, repeatCount do
+                    local newResult = {}
+                    for _, r in ipairs(result) do
+                        for _, v in ipairs(tab) do
+                            table.insert(newResult, { v, unpack(r) })
+                        end
+                    end
+                    result = newResult
+                end
+                return result
+            end
+
+            -- Safely find Remote object
+            local Remote = game.ReplicatedStorage:FindFirstChild("Ragdoll")
+            if Remote then
+                for Amount = 1, 4 do
+                    local Args = ProductRepeat(
+                        { "LongLegs", 1, 5000000, game.Players.LocalPlayer, true, false,
+                          game.Players.LocalPlayer.Character.HumanoidRootPart.Position,
+                          game.Players.LocalPlayer.Character.HumanoidRootPart },
+                        Amount
+                    )
+                    for _, Argums in ipairs(Args) do
+                        Remote:FireServer(unpack(Argums))
+                    end
+                end
+            else
+                warn("Remote 'Ragdoll' not found in ReplicatedStorage.")
+            end
+        end
+    end)()
+
+if cupidvfx then
+    task.spawn(function()
+        while task.wait(0.01) do
+            for i = 1, 10 do
+          	  game.ReplicatedStorage.EmoteVFX:FireServer("CUPID")
+			end
+        end
+    end)
+end
+
+if puzzplepiecevfx then
+    task.spawn(function()
+        while task.wait(0.01) do
+            for i = 1, 10 do
+          	  game.ReplicatedStorage.EmoteVFX:FireServer("PUZZLE")
+			end
+        end
+    end)
+end
+
+if heartspart then
+    task.spawn(function()
+        while task.wait(0.01) do
+			for i = 1, 10 do
+          	  game.ReplicatedStorage.EmoteVFX:FireServer("HEART")
+			end
+        end
+    end)
+end
+
+if reoball then
+    task.spawn(function()
+        while task.wait(0.01) do
+            for i = 1, 10 do
+          	  game.ReplicatedStorage.EmoteVFX:FireServer("READY")
+			end
+        end
+    end)
+end
+
+end)()
+
+end)
 --Keybind
 WeaponTrait:NewKeybind("ToggleUI", "wtv u wanna use to close and open tis", Enum.KeyCode.LeftAlt, function()
 	Library:ToggleUI()
