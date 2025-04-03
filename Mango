@@ -406,6 +406,39 @@ end
 end)()
 
 end)
+
+--Duping
+local DupeWindow = Window:NewTab("Duping")
+local MainDuping = DupeWindow:NewSection("Main")
+
+MainDuping:NewButton("Dupe Other Slot To Current", "Dupes everything on your other slot to the current slot.", function()
+    local plr = game.Players.LocalPlayer
+    plr.Character.Humanoid.Health = 0
+    
+    task.wait(10)
+    
+    game.ReplicatedStorage.rerolls.Slots:FireServer("1")
+
+    task.wait(2)
+    	local TeleportService = game:GetService("TeleportService")
+	local HttpService = game:GetService("HttpService")
+	local PlaceID = game.PlaceId
+
+	-- Fetch server data
+	local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"))
+
+	for _, server in ipairs(servers.data) do
+		-- Skip current server and check latency
+		if server.id ~= game.JobId and server.playing < server.maxPlayers then
+			local latency = server.ping or server.RequestQueueSize -- Approximation
+			if latency and latency < 100 then
+				TeleportService:TeleportToPlaceInstance(PlaceID, server.id, player)
+				break
+			end
+		end
+	end
+end)
+
 --Keybind
 WeaponTrait:NewKeybind("ToggleUI", "wtv u wanna use to close and open tis", Enum.KeyCode.LeftAlt, function()
 	Library:ToggleUI()
@@ -420,6 +453,7 @@ WeaponTrait:NewButton("RedeemCode", "This will auto roll your trait until you ge
     code:FireServer("70KLIKES")
     code:FireServer("MEDALXLOCKED")
     code:FireServer("10KSUBS")
+    code:FireServer("SEASON5WINNER")
 end)
 while task.wait(0.2) do
     weplabel:UpdateLabel(player.Backpack:FindFirstChildWhichIsA("ValueBase").Name)
