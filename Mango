@@ -73,7 +73,7 @@ Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you 
     local charred = player.Character.AuraColour.Red
     local charGreen = player.Character.AuraColour.Green
 
-    local previousRed, previousGreen, previousBlue = -1, -1, -1 -- Initialize with invalid values to force the first roll
+    local previousRed, previousGreen, previousBlue = -1, -1, -1
 
     local function isWithinTolerance(red, green, blue, targetRed, targetGreen, targetBlue, tolerance)
         return math.abs(red - targetRed) <= tolerance and
@@ -81,56 +81,56 @@ Flow:NewButton("Auto Roll Flow", "This will auto roll your flow color until you 
                math.abs(blue - targetBlue) <= tolerance
     end
 
-    local tolerance = flolen -- Adjust to desired leniency
+    local tolerance = flolen -- Adjust for leniency
 
-
-    -- Assuming redon, blueon, greenon, whiteon, and blackon are already defined
     if not (redon or blueon or greenon or whiteon or blackon) then
-        print("No colors selected for rolling.")
+        warn("No colors selected for rolling.")
         return
     end
 
-    -- Initial roll to start the process
-    game.ReplicatedStorage.rerolls.aurareroll:FireServer()
+    -- Function to execute a roll
+    local function executeRoll()
+        game.ReplicatedStorage.rerolls.aurareroll:FireServer()
+    end
+
+    -- Initial roll
+    executeRoll()
     print("Initial roll fired.")
 
-    while task.wait(0.2) do
-		if tpfalse == true then
-			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(100, 10000, 100)
-		end
+    while true do
+        -- Minimize the wait time for high latency
+        task.wait(0.01)
+
+        if tpfalse == true then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(100, 10000, 100)
+        end
+
         if charred.Value == previousRed and charGreen.Value == previousGreen and charblue.Value == previousBlue then
-            print("No color change detected, skipping roll.")
-            task.wait(0.5) -- Wait a bit longer before trying again
+            print("No color change detected.")
         else
-            -- Check if the current color matches any target
+            -- Update previous colors
+            previousRed, previousGreen, previousBlue = charred.Value, charGreen.Value, charblue.Value
+
+            -- Check for target colors
             if redon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 1, 0, 0, tolerance) then
                 print("Target color achieved: Red")
                 break
-            end
-            if blueon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 0, 1, tolerance) then
+            elseif blueon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 0, 1, tolerance) then
                 print("Target color achieved: Blue")
                 break
-            end
-            if greenon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 1, 0, tolerance) then
+            elseif greenon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 1, 0, tolerance) then
                 print("Target color achieved: Green")
                 break
-            end
-            if whiteon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 1, 1, 1, tolerance) then
+            elseif whiteon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 1, 1, 1, tolerance) then
                 print("Target color achieved: White")
                 break
-            end
-            if blackon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 0, 0, tolerance) then
+            elseif blackon and isWithinTolerance(charred.Value, charGreen.Value, charblue.Value, 0, 0, 0, tolerance) then
                 print("Target color achieved: Black")
                 break
             end
 
-            -- Update previous color values
-            previousRed, previousGreen, previousBlue = charred.Value, charGreen.Value, charblue.Value
-
-            -- Fire remote event to roll again
-            game.ReplicatedStorage.rerolls.aurareroll:FireServer()
-
-            -- Debug print to track rolling progress
+            -- Roll again
+            executeRoll()
             print("Rolling... Current Values - Red:", charred.Value, "Green:", charGreen.Value, "Blue:", charblue.Value)
         end
     end
